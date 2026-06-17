@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 
-export default function NewQuestionPage() {
+function NewQuestionPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const sessionId = searchParams.get('sessionId')
@@ -270,5 +270,17 @@ export default function NewQuestionPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function NewQuestionPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8 text-center text-gray-500">
+        読み込み中...
+      </div>
+    }>
+      <NewQuestionPageContent />
+    </Suspense>
   )
 }

@@ -124,6 +124,9 @@ export default function AnalyticsDashboard() {
               <h1 className="text-2xl font-bold text-gray-900">メーカー向け分析ダッシュボード</h1>
               <p className="text-sm text-gray-600 mt-1">
                 販売店の利用状況、頻出課題、システム精度を可視化
+                {currentUser && (
+                  <span className="ml-2 text-gray-500">（{currentUser.name}）</span>
+                )}
               </p>
             </div>
             <Link href="/">

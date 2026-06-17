@@ -1,5 +1,5 @@
 import { WorkSession } from '@/app/lib/mock-data'
-import { PHASE_LABELS, Phase } from '@/app/lib/utils'
+import { PHASE_LABELS } from '@/app/lib/utils'
 
 interface AIAssistantProps {
   summary: string

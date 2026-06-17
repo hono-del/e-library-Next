@@ -142,19 +142,41 @@ export function scoreDocument(
   return Math.min(score, 0.99)
 }
 
+export interface SearchResultItem {
+  type: 'manual' | 'tie' | 'qa'
+  id: string
+  title: string
+  snippet: string
+  relevanceScore: number
+  url: string
+  vehicleModel?: string
+  modelYear?: string | number
+  section?: string
+  symptom?: string
+  solution?: string
+  bestAnswer?: string
+}
+
 export function localSearch(
   query: string,
   vehicleModel?: string,
   modelYear?: string | number,
   limit = 5
-) {
+): SearchResultItem[] {
   return searchDocuments
+    .filter((doc) => matchesVehicle(doc, vehicleModel, modelYear))
     .map((doc) => ({
       type: doc.type,
       id: doc.id,
       title: doc.title,
       snippet: doc.content.slice(0, 150) + (doc.content.length > 150 ? '...' : ''),
       relevanceScore: scoreDocument(doc, query, vehicleModel, modelYear),
+      url:
+        doc.type === 'manual'
+          ? `/manuals/${doc.id}`
+          : doc.type === 'tie'
+          ? `/ties/${doc.id}`
+          : `/qa-questions/${doc.id}`,
       vehicleModel: doc.vehicleModel,
       modelYear: doc.modelYear,
       section: doc.section,

@@ -1,8 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
-import { localSearch, mockDatabase, searchDocuments } from '@/app/lib/search-data'
+import { localSearch, mockDatabase, searchDocuments, SearchResultItem } from '@/app/lib/search-data'
 
-const DEFAULTModel = 'claude-sonnet-4-20250514'
 const MODEL_FALLBACKS = [
   'claude-sonnet-4-6',
   'claude-sonnet-4-20250514',
@@ -46,21 +45,16 @@ function parseJsonFromClaude(text: string): unknown {
   return JSON.parse(jsonText)
 }
 
-type SearchResult = Record<string, unknown> & {
-  id: string
-  type: string
-  relevanceScore?: number
-}
-
-function enrichResult(result: SearchResult) {
-  const baseResult: SearchResult = {
+function enrichResult(result: SearchResultItem): SearchResultItem {
+  const baseResult: SearchResultItem = {
     ...result,
     url:
-      result.type === 'manual'
+      result.url ??
+      (result.type === 'manual'
         ? `/manuals/${result.id}`
         : result.type === 'tie'
         ? `/ties/${result.id}`
-        : `/qa-questions/${result.id}`,
+        : `/qa-questions/${result.id}`),
   }
 
   const dbItem = searchDocuments.find((d) => d.id === result.id)
@@ -76,8 +70,8 @@ function enrichResult(result: SearchResult) {
   return baseResult
 }
 
-function mergeResults(claudeResults: SearchResult[], localResults: SearchResult[]) {
-  const merged = new Map<string, SearchResult>()
+function mergeResults(claudeResults: SearchResultItem[], localResults: SearchResultItem[]) {
+  const merged = new Map<string, SearchResultItem>()
 
   for (const result of localResults) {
     merged.set(String(result.id), enrichResult(result))
@@ -91,15 +85,15 @@ function mergeResults(claudeResults: SearchResult[], localResults: SearchResult[
         ...existing,
         ...result,
         relevanceScore: Math.max(
-          Number(existing?.relevanceScore ?? 0),
-          Number(result.relevanceScore ?? 0)
+          existing?.relevanceScore ?? 0,
+          result.relevanceScore ?? 0
         ),
       })
     )
   }
 
   return Array.from(merged.values())
-    .sort((a, b) => Number(b.relevanceScore ?? 0) - Number(a.relevanceScore ?? 0))
+    .sort((a, b) => (b.relevanceScore ?? 0) - (a.relevanceScore ?? 0))
     .slice(0, 5)
 }
 
@@ -118,7 +112,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'クエリが空です' }, { status: 400 })
     }
 
-    const localResults = localSearch(query, vehicleModel, modelYear, 5) as SearchResult[]
+    const localResults = localSearch(query, vehicleModel, modelYear, 5)
 
     const searchPrompt = `あなたは自動車整備情報の検索アシスタントです。
 
@@ -154,7 +148,7 @@ JSONのみを返してください。形式：
   ]
 }`
 
-    let claudeResults: SearchResult[] = []
+    let claudeResults: SearchResultItem[] = []
     try {
       const searchResponse = await createClaudeMessage({
         max_tokens: 2000,
@@ -164,7 +158,7 @@ JSONのみを返してください。形式：
       const searchContent = searchResponse.content[0]
       if (searchContent.type === 'text') {
         const parsed = parseJsonFromClaude(searchContent.text) as {
-          results?: SearchResult[]
+          results?: SearchResultItem[]
         }
         claudeResults = parsed.results ?? []
       }
@@ -230,7 +224,7 @@ function buildFallbackSummary(
   query: string,
   vehicleModel: string | undefined,
   modelYear: string | number | undefined,
-  results: SearchResult[]
+  results: SearchResultItem[]
 ) {
   const vehicleLabel = vehicleModel && modelYear ? `${vehicleModel} ${modelYear}年式` : '対象車両'
   const titles = results.map((r) => `・${r.title}`).join('\n')

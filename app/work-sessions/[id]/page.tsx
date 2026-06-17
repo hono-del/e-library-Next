@@ -1,7 +1,7 @@
 'use client'
 
 import { use, useEffect, useState } from 'react'
-import { mockWorkSessions, mockRecommendations, WorkSession } from '@/app/lib/mock-data'
+import { mockWorkSessions, WorkSession } from '@/app/lib/mock-data'
 import { PHASE_LABELS, WORKFLOW_PHASES, getCurrentWorkflowPhaseId } from '@/app/lib/utils'
 import WorkSessionHeader from './components/WorkSessionHeader'
 import AIAssistant from './components/AIAssistant'
@@ -48,7 +48,7 @@ export default function WorkSessionPage({ params }: { params: Promise<{ id: stri
 
     const dtcText = session.dtc.length > 0 ? session.dtc[0] : 'P0420'
     const vehicleInfo = `${session.vehicleModel} ${session.modelYear}年`
-    const currentWorkflowPhaseId = (session as any).currentWorkflowPhaseId || 'diagnosis'
+    const currentWorkflowPhaseId = session.currentWorkflowPhaseId ?? getCurrentWorkflowPhaseId(session.currentPhase)
 
     // 工程に応じた情報を返す
     switch (currentWorkflowPhaseId) {
@@ -359,7 +359,7 @@ export default function WorkSessionPage({ params }: { params: Promise<{ id: stri
             <div className="flex gap-2 min-w-max">
               {WORKFLOW_PHASES.map((phase, index) => {
                 // sessionStorageのcurrentWorkflowPhaseIdを使用、なければデフォルトで取得
-                const currentPhaseId = (session as any).currentWorkflowPhaseId || getCurrentWorkflowPhaseId(session.currentPhase)
+                const currentPhaseId = session.currentWorkflowPhaseId ?? getCurrentWorkflowPhaseId(session.currentPhase)
                 const isCurrent = phase.id === currentPhaseId
                 const isCompleted = index < 2
                 
@@ -405,7 +405,7 @@ export default function WorkSessionPage({ params }: { params: Promise<{ id: stri
           
           {/* 現在のフェーズの詳細情報 */}
           {(() => {
-            const currentPhaseId = (session as any).currentWorkflowPhaseId || getCurrentWorkflowPhaseId(session.currentPhase)
+            const currentPhaseId = session.currentWorkflowPhaseId ?? getCurrentWorkflowPhaseId(session.currentPhase)
             const currentPhase = WORKFLOW_PHASES.find(p => p.id === currentPhaseId)
             
             return currentPhase ? (

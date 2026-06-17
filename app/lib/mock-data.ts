@@ -6,6 +6,7 @@ export interface WorkSession {
   symptom: string | null
   dtc: string[]
   currentPhase: 'intake' | 'diagnosis' | 'planning' | 'execution' | 'verification' | 'delivery'
+  currentWorkflowPhaseId?: string
   status: 'in_progress' | 'paused' | 'completed'
   startedAt: Date
   completedAt: Date | null

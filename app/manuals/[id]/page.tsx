@@ -72,7 +72,10 @@ export default function ManualDetailPage({ params }: { params: Promise<{ id: str
           </span>
         </div>
         <h1 className="text-2xl font-bold mb-3">{manual.title}</h1>
-        <div className="flex items-center text-sm text-gray-600 space-x-4">
+        <div className="flex flex-wrap items-center text-sm text-gray-600 gap-x-4 gap-y-1">
+          <div>
+            <span className="font-medium">車両:</span> {vehicleInfo.model} {vehicleInfo.year}年
+          </div>
           <div>
             <span className="font-medium">セクション:</span> {manual.section}
           </div>

@@ -1,18 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { matchesFilter } from '@/app/lib/search-data'
+import { matchesFilter, SearchResultItem } from '@/app/lib/search-data'
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('sessionId')
   
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
-  const [results, setResults] = useState<any[]>([])
+  const [results, setResults] = useState<SearchResultItem[]>([])
   const [aiSummary, setAiSummary] = useState('')
   const [vehicleInfo, setVehicleInfo] = useState({ model: '', year: '' })
   const [filterModel, setFilterModel] = useState('all')
@@ -463,5 +463,17 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8 text-center text-gray-500">
+        読み込み中...
+      </div>
+    }>
+      <SearchPageContent />
+    </Suspense>
   )
 }
