@@ -64,8 +64,8 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
           session.currentWorkflowPhaseId = nextPhaseInfo.nextWorkflowPhase.id
           sessionStorage.setItem('currentWorkSession', JSON.stringify(session))
           
-          // ページをリフレッシュして新しいフェーズの情報を表示
-          router.refresh()
+          // ページをリロードして新しいフェーズの情報を表示
+          window.location.reload()
         } catch (error) {
           console.error('Failed to update session:', error)
           alert('工程の更新に失敗しました')
