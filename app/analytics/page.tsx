@@ -14,6 +14,9 @@ interface User {
 export default function AnalyticsDashboard() {
   const router = useRouter()
   const [dateRange, setDateRange] = useState('30days')
+  const [vehicleModel, setVehicleModel] = useState('all')
+  const [modelYear, setModelYear] = useState('all')
+  const [dealer, setDealer] = useState('all')
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -133,19 +136,115 @@ export default function AnalyticsDashboard() {
       </div>
 
       <div className="container mx-auto px-4 pb-8">
-        {/* 期間選択 */}
-        <div className="mb-6 flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">分析期間:</label>
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="7days">過去7日間</option>
-            <option value="30days">過去30日間</option>
-            <option value="90days">過去90日間</option>
-            <option value="1year">過去1年間</option>
-          </select>
+        {/* フィルタセクション */}
+        <div className="card p-6 mb-6">
+          <h2 className="text-lg font-bold mb-4">フィルタ条件</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* 分析期間 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                分析期間
+              </label>
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="7days">過去7日間</option>
+                <option value="30days">過去30日間</option>
+                <option value="90days">過去90日間</option>
+                <option value="1year">過去1年間</option>
+              </select>
+            </div>
+
+            {/* 車種 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                車種
+              </label>
+              <select
+                value={vehicleModel}
+                onChange={(e) => setVehicleModel(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="all">全車種</option>
+                <option value="Model A">Model A</option>
+                <option value="Model B">Model B</option>
+                <option value="Model C">Model C</option>
+                <option value="Model D">Model D</option>
+              </select>
+            </div>
+
+            {/* 年式 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                年式
+              </label>
+              <select
+                value={modelYear}
+                onChange={(e) => setModelYear(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="all">全年式</option>
+                <option value="2024">2024年</option>
+                <option value="2023">2023年</option>
+                <option value="2022">2022年</option>
+                <option value="2021">2021年</option>
+                <option value="2020">2020年</option>
+                <option value="older">2019年以前</option>
+              </select>
+            </div>
+
+            {/* ディーラー */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ディーラー
+              </label>
+              <select
+                value={dealer}
+                onChange={(e) => setDealer(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="all">全ディーラー</option>
+                <option value="dealer-a">ディーラーA</option>
+                <option value="dealer-b">ディーラーB</option>
+                <option value="dealer-c">ディーラーC</option>
+              </select>
+            </div>
+          </div>
+
+          {/* フィルタ適用状態表示 */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="font-semibold">適用中のフィルタ:</span>
+              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                {dateRange === '7days' && '過去7日間'}
+                {dateRange === '30days' && '過去30日間'}
+                {dateRange === '90days' && '過去90日間'}
+                {dateRange === '1year' && '過去1年間'}
+              </span>
+              {vehicleModel !== 'all' && (
+                <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
+                  {vehicleModel}
+                </span>
+              )}
+              {modelYear !== 'all' && (
+                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded">
+                  {modelYear}年
+                </span>
+              )}
+              {dealer !== 'all' && (
+                <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded">
+                  {dealer === 'dealer-a' && 'ディーラーA'}
+                  {dealer === 'dealer-b' && 'ディーラーB'}
+                  {dealer === 'dealer-c' && 'ディーラーC'}
+                </span>
+              )}
+              {(vehicleModel === 'all' && modelYear === 'all' && dealer === 'all') && (
+                <span className="text-gray-500">（全データ）</span>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* サマリーカード */}
