@@ -128,6 +128,16 @@ export function getNextWorkflowPhase(currentPhaseId: string): WorkflowPhase | nu
   return null
 }
 
+// 前のワークフローフェーズを取得
+export function getPreviousWorkflowPhase(currentPhaseId: string): WorkflowPhase | null {
+  const currentIndex = WORKFLOW_PHASES.findIndex(p => p.id === currentPhaseId)
+  // ①②は受付で完了しているので、③（diagnosis）より前には戻れない
+  if (currentIndex > 2) {
+    return WORKFLOW_PHASES[currentIndex - 1]
+  }
+  return null
+}
+
 // ワークフローフェーズIDから対応するPhaseを取得
 export function getPhaseFromWorkflowPhaseId(workflowPhaseId: string): Phase {
   const phase = WORKFLOW_PHASES.find(p => p.id === workflowPhaseId)
