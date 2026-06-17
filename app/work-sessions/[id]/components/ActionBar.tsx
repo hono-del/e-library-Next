@@ -134,10 +134,6 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
     }
   }
 
-  const handleBackToHome = () => {
-    router.push('/')
-  }
-
   const nextPhaseInfo = getNextPhaseInfo()
   const previousPhaseInfo = getPreviousPhaseInfo()
 
@@ -170,12 +166,6 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
             className="btn-secondary"
           >
             💬 現場に質問する
-          </button>
-          <button
-            onClick={handleBackToHome}
-            className="btn-secondary"
-          >
-            🏠 トップへ戻る
           </button>
           {!nextPhaseInfo.isComplete && (
             <button
