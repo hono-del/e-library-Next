@@ -4,20 +4,25 @@ import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { mockRecommendations } from '@/app/lib/mock-data'
 import { searchDocuments } from '@/app/lib/search-data'
+import { getWorkflowManual, SessionContext } from '@/app/lib/workflow-content'
 
 export default function ManualDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const [vehicleInfo, setVehicleInfo] = useState({ model: 'Model A', year: 2024 })
+  const [sessionContext, setSessionContext] = useState<SessionContext>({
+    vehicleModel: 'Model A',
+    modelYear: 2024,
+    dtc: 'P0420',
+  })
   
   useEffect(() => {
-    // sessionStorageから車両情報を取得
     const savedSession = sessionStorage.getItem('currentWorkSession')
     if (savedSession) {
       try {
         const session = JSON.parse(savedSession)
-        setVehicleInfo({
-          model: session.vehicleModel || 'Model A',
-          year: session.modelYear || 2024
+        setSessionContext({
+          vehicleModel: session.vehicleModel || 'Model A',
+          modelYear: session.modelYear || 2024,
+          dtc: session.dtc?.[0] || 'P0420',
         })
       } catch (error) {
         console.error('Failed to parse session data:', error)
@@ -25,18 +30,23 @@ export default function ManualDetailPage({ params }: { params: Promise<{ id: str
     }
   }, [])
   
-  // モックデータから検索
-  const manualFromRecs = Object.values(mockRecommendations)
+  const workflowManual = getWorkflowManual(id, sessionContext)
+  const manualFromRecsItem = Object.values(mockRecommendations)
     .flatMap((rec) => rec.manuals)
     .find((m) => m.id === id)
+  const manualFromRecs = manualFromRecsItem
+    ? { ...manualFromRecsItem, contentType: 'diagnosis' as const, body: '' }
+    : null
   const manualFromSearch = searchDocuments.find((m) => m.type === 'manual' && m.id === id)
-  const manual = manualFromRecs ?? (manualFromSearch
+  const manual = workflowManual ?? manualFromRecs ?? (manualFromSearch
     ? {
         id: manualFromSearch.id,
         title: manualFromSearch.title,
         section: manualFromSearch.section ?? '',
         url: `/manuals/${manualFromSearch.id}`,
         relevanceScore: 0.9,
+        contentType: 'diagnosis' as const,
+        body: manualFromSearch.content,
       }
     : null)
 
@@ -74,7 +84,7 @@ export default function ManualDetailPage({ params }: { params: Promise<{ id: str
         <h1 className="text-2xl font-bold mb-3">{manual.title}</h1>
         <div className="flex flex-wrap items-center text-sm text-gray-600 gap-x-4 gap-y-1">
           <div>
-            <span className="font-medium">車両:</span> {vehicleInfo.model} {vehicleInfo.year}年
+            <span className="font-medium">車両:</span> {sessionContext.vehicleModel} {sessionContext.modelYear}年
           </div>
           <div>
             <span className="font-medium">セクション:</span> {manual.section}
@@ -87,7 +97,16 @@ export default function ManualDetailPage({ params }: { params: Promise<{ id: str
 
       {/* マニュアル本文 */}
       <div className="card p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">診断フローチャート</h2>
+        {'body' in manual && manual.body && (
+          <p className="text-gray-700 mb-6">{manual.body}</p>
+        )}
+        <h2 className="text-xl font-bold mb-4">
+          {manual.contentType === 'repair' ? '整備手順' :
+           manual.contentType === 'calibration' ? '校正手順' :
+           manual.contentType === 'inspection' ? '完了検査チェックリスト' :
+           manual.contentType === 'report' ? '顧客説明テンプレート' :
+           '診断フローチャート'}
+        </h2>
         
         <div className="space-y-6">
           {/* ステップ1 */}

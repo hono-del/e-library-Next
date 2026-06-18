@@ -3,20 +3,25 @@
 import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { mockRecommendations } from '@/app/lib/mock-data'
+import { getWorkflowTie, SessionContext } from '@/app/lib/workflow-content'
 
 export default function TIEDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const [vehicleInfo, setVehicleInfo] = useState({ model: 'Model A', year: 2024 })
+  const [sessionContext, setSessionContext] = useState<SessionContext>({
+    vehicleModel: 'Model A',
+    modelYear: 2024,
+    dtc: 'P0420',
+  })
   
   useEffect(() => {
-    // sessionStorageから車両情報を取得
     const savedSession = sessionStorage.getItem('currentWorkSession')
     if (savedSession) {
       try {
         const session = JSON.parse(savedSession)
-        setVehicleInfo({
-          model: session.vehicleModel || 'Model A',
-          year: session.modelYear || 2024
+        setSessionContext({
+          vehicleModel: session.vehicleModel || 'Model A',
+          modelYear: session.modelYear || 2024,
+          dtc: session.dtc?.[0] || 'P0420',
         })
       } catch (error) {
         console.error('Failed to parse session data:', error)
@@ -24,15 +29,14 @@ export default function TIEDetailPage({ params }: { params: Promise<{ id: string
     }
   }, [])
   
-  // モックデータから検索（フォールバック用）
-  const baseTie = Object.values(mockRecommendations)
+  const workflowTie = getWorkflowTie(id, sessionContext)
+  const baseTie = workflowTie ?? Object.values(mockRecommendations)
     .flatMap((rec) => rec.ties)
     .find((t) => t.id === id)
   
-  // 車両情報を動的に反映
   const tie = baseTie ? {
     ...baseTie,
-    title: `${vehicleInfo.model} ${vehicleInfo.year}年 P0420対応事例`
+    title: workflowTie ? baseTie.title : `${sessionContext.vehicleModel} ${sessionContext.modelYear}年 P0420対応事例`,
   } : null
 
   if (!tie) {
@@ -86,11 +90,11 @@ export default function TIEDetailPage({ params }: { params: Promise<{ id: string
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-sm text-gray-600">車種</div>
-            <div className="font-medium">{vehicleInfo.model}</div>
+            <div className="font-medium">{sessionContext.vehicleModel}</div>
           </div>
           <div>
             <div className="text-sm text-gray-600">年式</div>
-            <div className="font-medium">{vehicleInfo.year}年</div>
+            <div className="font-medium">{sessionContext.modelYear}年</div>
           </div>
           <div>
             <div className="text-sm text-gray-600">走行距離</div>
