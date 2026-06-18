@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { mockRecommendations } from '@/app/lib/mock-data'
 import { searchDocuments } from '@/app/lib/search-data'
 import { getWorkflowManual, SessionContext } from '@/app/lib/workflow-content'
+import ManualBodyContent from './components/ManualBodyContent'
 
 export default function ManualDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -97,87 +98,7 @@ export default function ManualDetailPage({ params }: { params: Promise<{ id: str
 
       {/* マニュアル本文 */}
       <div className="card p-6 mb-6">
-        {'body' in manual && manual.body && (
-          <p className="text-gray-700 mb-6">{manual.body}</p>
-        )}
-        <h2 className="text-xl font-bold mb-4">
-          {manual.contentType === 'repair' ? '整備手順' :
-           manual.contentType === 'calibration' ? '校正手順' :
-           manual.contentType === 'inspection' ? '完了検査チェックリスト' :
-           manual.contentType === 'report' ? '顧客説明テンプレート' :
-           '診断フローチャート'}
-        </h2>
-        
-        <div className="space-y-6">
-          {/* ステップ1 */}
-          <div className="border-l-4 border-primary pl-4">
-            <h3 className="font-semibold text-lg mb-2">ステップ 1: 基本診断</h3>
-            <ul className="list-disc list-inside space-y-1 text-gray-700">
-              <li>DGS（診断機）を接続し、DTCを確認</li>
-              <li>フリーズフレームデータを記録</li>
-              <li>現在の症状を確認</li>
-            </ul>
-          </div>
-
-          {/* ステップ2 */}
-          <div className="border-l-4 border-primary pl-4">
-            <h3 className="font-semibold text-lg mb-2">ステップ 2: O2センサー点検</h3>
-            <ul className="list-disc list-inside space-y-1 text-gray-700">
-              <li>O2センサーの配線を目視点検</li>
-              <li>センサーのコネクタ接続を確認</li>
-              <li>センサーの抵抗値を測定（仕様値: 4-14Ω）</li>
-            </ul>
-            <div className="mt-3 bg-yellow-50 border-l-4 border-yellow-500 p-3">
-              <p className="text-sm text-yellow-800">
-                ⚠️ <span className="font-semibold">注意:</span> センサーが熱い場合は冷めるまで待機
-              </p>
-            </div>
-          </div>
-
-          {/* ステップ3 */}
-          <div className="border-l-4 border-primary pl-4">
-            <h3 className="font-semibold text-lg mb-2">ステップ 3: 触媒効率確認</h3>
-            <ul className="list-disc list-inside space-y-1 text-gray-700">
-              <li>アイドリング時のデータモニターで前後O2センサー電圧を確認</li>
-              <li>2500rpm時の電圧変化を記録</li>
-              <li>触媒前後の温度差を確認（仕様値: 50℃以上）</li>
-            </ul>
-          </div>
-
-          {/* ステップ4 */}
-          <div className="border-l-4 border-primary pl-4">
-            <h3 className="font-semibold text-lg mb-2">ステップ 4: 判定と対策</h3>
-            <div className="bg-gray-50 rounded p-4 space-y-3">
-              <div>
-                <span className="font-semibold">OK: </span>
-                <span>他の原因を調査（エアリークなど）</span>
-              </div>
-              <div>
-                <span className="font-semibold">NG: </span>
-                <span>O2センサーまたは触媒の交換を検討</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 必要部品 */}
-        <div className="mt-8 bg-blue-50 rounded-lg p-4">
-          <h3 className="font-semibold mb-3">必要な部品・工具</h3>
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-center">
-              <span className="w-32 font-medium">DGS（診断機）</span>
-              <span className="text-gray-600">必須</span>
-            </li>
-            <li className="flex items-center">
-              <span className="w-32 font-medium">マルチメーター</span>
-              <span className="text-gray-600">必須</span>
-            </li>
-            <li className="flex items-center">
-              <span className="w-32 font-medium">トルクレンチ</span>
-              <span className="text-gray-600">交換時に必要（55Nm）</span>
-            </li>
-          </ul>
-        </div>
+        <ManualBodyContent manual={manual} sessionContext={sessionContext} />
       </div>
 
       {/* アクションボタン */}
