@@ -4,10 +4,10 @@ import { useRouter } from 'next/navigation'
 import { 
   Phase, 
   getCurrentWorkflowPhaseId, 
-  getNextWorkflowPhase,
-  getPreviousWorkflowPhase,
   getPhaseFromWorkflowPhaseId 
 } from '@/app/lib/utils'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
+import { getNextWorkflowPhaseLocalized, getPreviousWorkflowPhaseLocalized } from '@/app/lib/i18n/translations'
 
 interface ActionBarProps {
   sessionId: string
@@ -16,6 +16,7 @@ interface ActionBarProps {
 
 export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
   const router = useRouter()
+  const { t, locale } = useLanguage()
 
   const getStoredWorkflowPhaseId = () => {
     let workflowPhaseId = getCurrentWorkflowPhaseId(currentPhase)
@@ -37,17 +38,17 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
 
   const getNextPhaseInfo = () => {
     const currentWorkflowPhaseId = getStoredWorkflowPhaseId()
-    const nextWorkflowPhase = getNextWorkflowPhase(currentWorkflowPhaseId)
+    const nextWorkflowPhase = getNextWorkflowPhaseLocalized(currentWorkflowPhaseId, locale)
     
     if (nextWorkflowPhase) {
       return {
-        label: `次の工程：${nextWorkflowPhase.label}`,
+        label: t('workSession.nextPhase', { label: nextWorkflowPhase.label }),
         nextWorkflowPhase,
         isComplete: false
       }
     }
     return {
-      label: '作業完了',
+      label: t('workSession.completeWork'),
       nextWorkflowPhase: null,
       isComplete: true
     }
@@ -55,11 +56,11 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
 
   const getPreviousPhaseInfo = () => {
     const currentWorkflowPhaseId = getStoredWorkflowPhaseId()
-    const previousWorkflowPhase = getPreviousWorkflowPhase(currentWorkflowPhaseId)
+    const previousWorkflowPhase = getPreviousWorkflowPhaseLocalized(currentWorkflowPhaseId, locale)
     
     if (previousWorkflowPhase) {
       return {
-        label: `前の工程：${previousWorkflowPhase.label}`,
+        label: t('workSession.prevPhase', { label: previousWorkflowPhase.label }),
         previousWorkflowPhase,
         canGoBack: true
       }
@@ -76,7 +77,6 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
     if (nextPhaseInfo.isComplete) {
       handleComplete()
     } else if (nextPhaseInfo.nextWorkflowPhase) {
-      // sessionStorageの作業セッション情報を更新
       const savedSession = sessionStorage.getItem('currentWorkSession')
       if (savedSession) {
         try {
@@ -85,12 +85,10 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
           session.currentPhase = newPhase
           session.currentWorkflowPhaseId = nextPhaseInfo.nextWorkflowPhase.id
           sessionStorage.setItem('currentWorkSession', JSON.stringify(session))
-          
-          // ページをリロードして新しいフェーズの情報を表示
           window.location.reload()
         } catch (error) {
           console.error('Failed to update session:', error)
-          alert('工程の更新に失敗しました')
+          alert(t('workSession.phaseUpdateFailed'))
         }
       }
     }
@@ -99,7 +97,6 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
   const handlePreviousPhase = () => {
     const previousPhaseInfo = getPreviousPhaseInfo()
     if (previousPhaseInfo.canGoBack && previousPhaseInfo.previousWorkflowPhase) {
-      // sessionStorageの作業セッション情報を更新
       const savedSession = sessionStorage.getItem('currentWorkSession')
       if (savedSession) {
         try {
@@ -108,12 +105,10 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
           session.currentPhase = newPhase
           session.currentWorkflowPhaseId = previousPhaseInfo.previousWorkflowPhase.id
           sessionStorage.setItem('currentWorkSession', JSON.stringify(session))
-          
-          // ページをリロードして前のフェーズの情報を表示
           window.location.reload()
         } catch (error) {
           console.error('Failed to update session:', error)
-          alert('工程の更新に失敗しました')
+          alert(t('workSession.phaseUpdateFailed'))
         }
       }
     }
@@ -128,8 +123,7 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
   }
 
   const handleComplete = () => {
-    // TODO: 作業完了APIを呼び出す
-    if (confirm('作業を完了してもよろしいですか？')) {
+    if (confirm(t('workSession.confirmComplete'))) {
       router.push('/')
     }
   }
@@ -142,37 +136,25 @@ export default function ActionBar({ sessionId, currentPhase }: ActionBarProps) {
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-wrap justify-center gap-3">
           {previousPhaseInfo.canGoBack && (
-            <button
-              onClick={handlePreviousPhase}
-              className="btn-secondary"
-            >
+            <button onClick={handlePreviousPhase} className="btn-secondary">
               ← {previousPhaseInfo.label}
             </button>
           )}
-          <button
-            onClick={handleNextPhase}
-            className="btn-accent"
-          >
+          <button onClick={handleNextPhase} className="btn-accent">
             {nextPhaseInfo.label} →
           </button>
-          <button
-            onClick={handleSearch}
-            className="btn-secondary"
-          >
-            🔍 AIで情報を検索
+          <button onClick={handleSearch} className="btn-secondary">
+            {t('workSession.aiSearch')}
           </button>
-          <button
-            onClick={handlePostQuestion}
-            className="btn-secondary"
-          >
-            💬 現場に質問する
+          <button onClick={handlePostQuestion} className="btn-secondary">
+            {t('workSession.postQuestion')}
           </button>
           {!nextPhaseInfo.isComplete && (
             <button
               onClick={handleComplete}
               className="btn-secondary text-success border-success hover:bg-green-50"
             >
-              作業を完了
+              {t('workSession.finishWork')}
             </button>
           )}
         </div>

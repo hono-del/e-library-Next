@@ -1,5 +1,7 @@
+'use client'
+
 import { WorkSession } from '@/app/lib/mock-data'
-import { PHASE_LABELS } from '@/app/lib/utils'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
 interface AIAssistantProps {
   summary: string
@@ -7,6 +9,9 @@ interface AIAssistantProps {
 }
 
 export default function AIAssistant({ summary, session }: AIAssistantProps) {
+  const { t, locale } = useLanguage()
+  const yearSuffix = locale === 'ja' ? '年' : ''
+
   return (
     <div className="bg-blue-50 border-l-4 border-secondary rounded-lg p-6 mb-8">
       <div className="flex items-start">
@@ -26,15 +31,14 @@ export default function AIAssistant({ summary, session }: AIAssistantProps) {
           </svg>
         </div>
         <div className="ml-4 flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">AIアシスト</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">{t('workSession.aiAssist')}</h3>
           
-          {/* 判断根拠を追加 */}
           <div className="bg-white rounded-lg p-3 mb-4 text-sm border border-blue-100">
-            <div className="font-medium text-gray-900 mb-2">以下の情報から判断しています：</div>
+            <div className="font-medium text-gray-900 mb-2">{t('workSession.judgingCriteria')}</div>
             <div className="space-y-1 text-gray-700">
-              <div>• 車両: {session.vehicleModel} {session.modelYear}年</div>
-              <div>• DTC: {session.dtc.length > 0 ? session.dtc.join(', ') : 'なし'}</div>
-              <div>• 工程: {PHASE_LABELS[session.currentPhase]}</div>
+              <div>• {t('workSession.vehicleLabel')}: {session.vehicleModel} {session.modelYear}{yearSuffix}</div>
+              <div>• {t('workSession.dtcLabel')}: {session.dtc.length > 0 ? session.dtc.join(', ') : t('common.none')}</div>
+              <div>• {t('workSession.phaseLabel')}: {t(`phase.${session.currentPhase}`)}</div>
             </div>
           </div>
           

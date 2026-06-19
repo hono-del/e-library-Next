@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
-// サンプルアカウント
 const SAMPLE_ACCOUNTS = [
   {
     id: '1',
@@ -11,7 +11,6 @@ const SAMPLE_ACCOUNTS = [
     password: 'mechanic123',
     name: '佐藤健太',
     role: 'mechanic',
-    roleLabel: '整備作業者',
     dealer: 'サンプルディーラー',
   },
   {
@@ -20,13 +19,13 @@ const SAMPLE_ACCOUNTS = [
     password: 'manufacturer123',
     name: '田中花子',
     role: 'manufacturer',
-    roleLabel: 'メーカー管理者',
     dealer: 'サンプル自動車株式会社',
   },
 ]
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -37,22 +36,21 @@ export default function LoginPage() {
     setError('')
     setIsLoading(true)
 
-    // アカウント検証
     const user = SAMPLE_ACCOUNTS.find(
       (account) => account.email === email && account.password === password
     )
 
     if (user) {
-      // ユーザー情報をsessionStorageに保存
-      sessionStorage.setItem('currentUser', JSON.stringify(user))
-      
-      // ログイン成功
+      sessionStorage.setItem('currentUser', JSON.stringify({
+        ...user,
+        roleLabel: t(`roles.${user.role}`),
+      }))
       setTimeout(() => {
         router.push('/')
       }, 500)
     } else {
       setIsLoading(false)
-      setError('メールアドレスまたはパスワードが正しくありません')
+      setError(t('login.error'))
     }
   }
 
@@ -64,20 +62,18 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
-        {/* ロゴとタイトル */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary mb-2">e-library Next</h1>
-          <p className="text-gray-600">整備情報プラットフォーム</p>
+          <p className="text-gray-600">{t('login.subtitle')}</p>
         </div>
 
-        {/* ログインフォーム */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
-          <h2 className="text-2xl font-bold mb-6 text-center">ログイン</h2>
+          <h2 className="text-2xl font-bold mb-6 text-center">{t('login.title')}</h2>
 
           <form onSubmit={handleLogin}>
             <div className="mb-4">
               <label htmlFor="email" className="block text-sm font-medium mb-2">
-                メールアドレス
+                {t('login.email')}
               </label>
               <input
                 type="email"
@@ -92,7 +88,7 @@ export default function LoginPage() {
 
             <div className="mb-6">
               <label htmlFor="password" className="block text-sm font-medium mb-2">
-                パスワード
+                {t('login.password')}
               </label>
               <input
                 type="password"
@@ -116,15 +112,14 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'ログイン中...' : 'ログイン'}
+              {isLoading ? t('login.submitting') : t('login.submit')}
             </button>
           </form>
         </div>
 
-        {/* サンプルアカウント */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h3 className="font-bold mb-4 text-center text-gray-700">
-            デモ用サンプルアカウント
+            {t('login.demoAccounts')}
           </h3>
           <div className="space-y-3">
             {SAMPLE_ACCOUNTS.map((account) => (
@@ -140,16 +135,18 @@ export default function LoginPage() {
                       ? 'bg-purple-100 text-purple-700' 
                       : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {account.roleLabel}
+                    {t(`roles.${account.role}`)}
                   </span>
                 </div>
                 <div className="text-sm text-gray-600 mb-1">{account.email}</div>
-                <div className="text-xs text-gray-500">パスワード: {account.password}</div>
+                <div className="text-xs text-gray-500">
+                  {t('login.passwordLabel')}: {account.password}
+                </div>
               </button>
             ))}
           </div>
           <p className="text-xs text-gray-500 text-center mt-4">
-            クリックすると自動入力されます
+            {t('login.demoHint')}
           </p>
         </div>
       </div>

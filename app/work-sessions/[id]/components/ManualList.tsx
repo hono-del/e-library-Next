@@ -1,15 +1,20 @@
+'use client'
+
 import Link from 'next/link'
 import { Manual } from '@/app/lib/mock-data'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
 interface ManualListProps {
   manuals: Manual[]
 }
 
 export default function ManualList({ manuals }: ManualListProps) {
+  const { t } = useLanguage()
+
   if (manuals.length === 0) {
     return (
       <div className="card p-6 text-center text-gray-500">
-        関連するマニュアルが見つかりませんでした
+        {t('search.noResults')}
       </div>
     )
   }
@@ -22,10 +27,10 @@ export default function ManualList({ manuals }: ManualListProps) {
             <div className="flex-1">
               <h3 className="font-semibold text-lg mb-2">{manual.title}</h3>
               <p className="text-sm text-gray-600 mb-2">
-                セクション: {manual.section}
+                {t('manual.section')}: {manual.section}
               </p>
               <div className="flex items-center text-sm text-gray-500">
-                <span>関連性: </span>
+                <span>{t('search.relevance')}: </span>
                 <div className="ml-2 flex">
                   {Array.from({ length: 5 }, (_, i) => (
                     <svg
@@ -47,7 +52,7 @@ export default function ManualList({ manuals }: ManualListProps) {
             </div>
             <Link href={manual.url}>
               <button className="btn-secondary ml-4">
-                詳細を見る
+                {t('common.viewDetails')}
               </button>
             </Link>
           </div>

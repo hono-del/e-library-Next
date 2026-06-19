@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
 interface User {
   id: string
@@ -13,6 +14,7 @@ interface User {
 
 export default function AnalyticsDashboard() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [dateRange, setDateRange] = useState('30days')
   const [vehicleModel, setVehicleModel] = useState('all')
   const [modelYear, setModelYear] = useState('all')
@@ -32,7 +34,7 @@ export default function AnalyticsDashboard() {
       const user = JSON.parse(userStr)
       if (user.role !== 'manufacturer') {
         // メーカー管理者以外はアクセス不可
-        alert('このページへのアクセス権限がありません')
+        alert(t('analytics.accessDenied'))
         router.push('/')
         return
       }
@@ -47,7 +49,7 @@ export default function AnalyticsDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-600">読み込み中...</div>
+        <div className="text-gray-600">{t('common.loading')}</div>
       </div>
     )
   }
@@ -121,9 +123,9 @@ export default function AnalyticsDashboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">メーカー向け分析ダッシュボード</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('analytics.title')}</h1>
               <p className="text-sm text-gray-600 mt-1">
-                販売店の利用状況、頻出課題、システム精度を可視化
+                {t('analytics.subtitle')}
                 {currentUser && (
                   <span className="ml-2 text-gray-500">（{currentUser.name}）</span>
                 )}
@@ -131,7 +133,7 @@ export default function AnalyticsDashboard() {
             </div>
             <Link href="/">
               <button className="btn-secondary">
-                トップへ戻る
+                {t('common.backToTop')}
               </button>
             </Link>
           </div>
@@ -141,12 +143,11 @@ export default function AnalyticsDashboard() {
       <div className="container mx-auto px-4 pb-8">
         {/* フィルタセクション */}
         <div className="card p-6 mb-6">
-          <h2 className="text-lg font-bold mb-4">フィルタ条件</h2>
+          <h2 className="text-lg font-bold mb-4">{t('analytics.filters')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* 分析期間 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                分析期間
+                {t('analytics.period')}
               </label>
               <select
                 value={dateRange}
@@ -160,17 +161,16 @@ export default function AnalyticsDashboard() {
               </select>
             </div>
 
-            {/* 車種 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                車種
+                {t('analytics.vehicle')}
               </label>
               <select
                 value={vehicleModel}
                 onChange={(e) => setVehicleModel(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="all">全車種</option>
+                <option value="all">{t('analytics.allVehicles')}</option>
                 <option value="Model A">Model A</option>
                 <option value="Model B">Model B</option>
                 <option value="Model C">Model C</option>
@@ -178,17 +178,16 @@ export default function AnalyticsDashboard() {
               </select>
             </div>
 
-            {/* 年式 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                年式
+                {t('analytics.modelYear')}
               </label>
               <select
                 value={modelYear}
                 onChange={(e) => setModelYear(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="all">全年式</option>
+                <option value="all">{t('analytics.allYears')}</option>
                 <option value="2024">2024年</option>
                 <option value="2023">2023年</option>
                 <option value="2022">2022年</option>
@@ -198,17 +197,16 @@ export default function AnalyticsDashboard() {
               </select>
             </div>
 
-            {/* ディーラー */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                ディーラー
+                {t('analytics.dealer')}
               </label>
               <select
                 value={dealer}
                 onChange={(e) => setDealer(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="all">全ディーラー</option>
+                <option value="all">{t('analytics.allDealers')}</option>
                 <option value="dealer-a">ディーラーA</option>
                 <option value="dealer-b">ディーラーB</option>
                 <option value="dealer-c">ディーラーC</option>
@@ -219,7 +217,7 @@ export default function AnalyticsDashboard() {
           {/* フィルタ適用状態表示 */}
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span className="font-semibold">適用中のフィルタ:</span>
+              <span className="font-semibold">{t('analytics.appliedFilters')}:</span>
               <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
                 {dateRange === '7days' && '過去7日間'}
                 {dateRange === '30days' && '過去30日間'}
@@ -244,7 +242,7 @@ export default function AnalyticsDashboard() {
                 </span>
               )}
               {(vehicleModel === 'all' && modelYear === 'all' && dealer === 'all') && (
-                <span className="text-gray-500">（全データ）</span>
+                <span className="text-gray-500">{t('common.allData')}</span>
               )}
             </div>
           </div>

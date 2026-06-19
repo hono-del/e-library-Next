@@ -1,3 +1,5 @@
+import { Locale } from '@/app/lib/i18n/types'
+
 export interface SearchDocument {
   type: 'manual' | 'tie' | 'qa'
   id: string
@@ -11,7 +13,7 @@ export interface SearchDocument {
   modelYear: number | 'all'
 }
 
-export const searchDocuments: SearchDocument[] = [
+const searchDocumentsJa: SearchDocument[] = [
   {
     type: 'manual',
     id: 'manual-456',
@@ -97,6 +99,116 @@ export const searchDocuments: SearchDocument[] = [
   },
 ]
 
+const searchDocumentsEn: SearchDocument[] = [
+  {
+    type: 'manual',
+    id: 'manual-456',
+    title: 'O2 Sensor Inspection & Replacement Procedure',
+    content:
+      'Describes rear O2 sensor inspection and replacement. Required tools: torque wrench, multimeter. Steps: 1. Cool engine, 2. Disconnect connector, 3. Visual wiring inspection, 4. Resistance measurement (normal: 4-14Ω), 5. Voltage waveform via data monitor, 6. Remove sensor (torque: 55Nm), 7. Install new sensor and verify operation',
+    section: 'Electrical / Sensors',
+    vehicleModel: 'all',
+    modelYear: 'all',
+  },
+  {
+    type: 'manual',
+    id: 'manual-b-o2',
+    title: 'Model B Service Manual: O2 Sensor Inspection',
+    content:
+      'O2 sensor inspection for Model B 2022. Check front/rear O2 sensor wiring connectors, measure sensor resistance, verify voltage response via DGS data monitor. Model B rear O2 sensor connectors are prone to water intrusion—also inspect for internal corrosion.',
+    section: 'Model B / Exhaust System',
+    vehicleModel: 'Model B',
+    modelYear: 2022,
+  },
+  {
+    type: 'manual',
+    id: 'manual-123',
+    title: 'Service Manual: P0420 - Catalyst Efficiency Below Threshold',
+    content:
+      'DTC P0420 indicates catalyst system efficiency below threshold. Detected when rear O2 sensor output voltage is similar to front O2 sensor. Diagnosis: 1. Check O2 sensor wiring, 2. Measure resistance (normal: 4-14Ω), 3. Verify pre/post catalyst temperature difference (normal: 50°C or more)',
+    section: 'Engine / Exhaust System',
+    vehicleModel: 'all',
+    modelYear: 'all',
+  },
+  {
+    type: 'tie',
+    id: 'tie-b-2022',
+    title: 'Model B 2022 O2 Sensor Replacement Case',
+    content:
+      'Model B 2022, 28,500 km. DTC P0420 set. Front/rear O2 voltage waveforms nearly synchronized. Rear O2 sensor response slow—replaced. Part no. 22690-BB456, 1.5 hr labor, approx. ¥30,000. No DTC recurrence after replacement.',
+    symptom: 'Catalyst efficiency warning lamp on',
+    solution: 'Resolved by rear O2 sensor replacement',
+    vehicleModel: 'Model B',
+    modelYear: 2022,
+  },
+  {
+    type: 'tie',
+    id: 'tie-456',
+    title: 'P0420 Repair Case',
+    content:
+      'Customer report: engine check lamp on. Front/rear O2 voltage waveforms nearly synchronized. Pre/post catalyst temperature difference only 20°C. Resolved by rear O2 sensor replacement. Labor: 1.5 hr, cost: approx. ¥30,000',
+    symptom: 'Catalyst efficiency warning lamp on',
+    solution: 'Resolved by O2 sensor replacement',
+    vehicleModel: 'Model A',
+    modelYear: 2024,
+  },
+  {
+    type: 'tie',
+    id: 'tie-789',
+    title: 'Catalyst Replacement Case',
+    content:
+      'Vehicle with 120,000 km; P0420 recurred after O2 sensor replacement. Pre/post catalyst temperature difference only 10°C—resolved by catalyst replacement. Labor: 3 hr, cost: approx. ¥150,000',
+    symptom: 'DTC recurred after sensor replacement',
+    solution: 'Catalyst replacement',
+    vehicleModel: 'Model A',
+    modelYear: 2023,
+  },
+  {
+    type: 'qa',
+    id: 'qa-o2-inspection',
+    title: 'How do I inspect the O2 sensor?',
+    content:
+      'Basic O2 sensor inspection: 1. Visual wiring/connector check, 2. Resistance measurement (4-14Ω), 3. Idle voltage waveform via DGS, 4. Response speed at 2500 rpm. If rear response is slower than front, degradation is likely.',
+    bestAnswer: 'Inspect in order: wiring → resistance → voltage waveform',
+    vehicleModel: 'all',
+    modelYear: 'all',
+  },
+  {
+    type: 'qa',
+    id: 'qa-789',
+    title: 'What are common causes of P0420?',
+    content:
+      'Most common cause of P0420 is O2 sensor degradation (~70%). Check voltage waveform on data monitor; if rear response is slower than front, sensor is degraded. If pre/post catalyst temperature difference is under 50°C, catalyst degradation is likely.',
+    bestAnswer: 'O2 sensor degradation is the most common cause',
+    vehicleModel: 'all',
+    modelYear: 'all',
+  },
+]
+
+/** @deprecated Use getSearchDocuments(locale) instead */
+export const searchDocuments = searchDocumentsJa
+
+export function getSearchDocuments(locale: Locale = 'ja'): SearchDocument[] {
+  return locale === 'en' ? searchDocumentsEn : searchDocumentsJa
+}
+
+export function getMockDatabase(locale: Locale = 'ja') {
+  const docs = getSearchDocuments(locale)
+  return {
+    manuals: docs.filter((d) => d.type === 'manual'),
+    ties: docs.filter((d) => d.type === 'tie'),
+    qaQuestions: docs.filter((d) => d.type === 'qa'),
+  }
+}
+
+/** @deprecated Use getMockDatabase(locale) instead */
+export const mockDatabase = getMockDatabase('ja')
+
+const KEYWORDS: Record<Locale, string[]> = {
+  ja: ['o2', 'センサ', '点検', '交換', 'p0420', '触媒', '電圧', '抵抗'],
+  en: ['o2', 'sensor', 'inspect', 'inspection', 'replace', 'p0420', 'catalyst', 'voltage', 'resistance'],
+}
+
 export function normalizeQuery(query: string): string {
   return query
     .toLowerCase()
@@ -120,12 +232,13 @@ export function scoreDocument(
   doc: SearchDocument,
   query: string,
   vehicleModel?: string,
-  modelYear?: string | number
+  modelYear?: string | number,
+  locale: Locale = 'ja'
 ): number {
   const normalizedQuery = normalizeQuery(query)
   const haystack = normalizeQuery(`${doc.title} ${doc.content} ${doc.section ?? ''} ${doc.symptom ?? ''}`)
+  const keywords = KEYWORDS[locale]
 
-  const keywords = ['o2', 'センサ', '点検', '交換', 'p0420', '触媒', '電圧', '抵抗']
   let score = 0
 
   if (haystack.includes(normalizedQuery)) score += 0.5
@@ -161,16 +274,17 @@ export function localSearch(
   query: string,
   vehicleModel?: string,
   modelYear?: string | number,
-  limit = 5
+  limit = 5,
+  locale: Locale = 'ja'
 ): SearchResultItem[] {
-  return searchDocuments
+  return getSearchDocuments(locale)
     .filter((doc) => matchesVehicle(doc, vehicleModel, modelYear))
     .map((doc) => ({
       type: doc.type,
       id: doc.id,
       title: doc.title,
       snippet: doc.content.slice(0, 150) + (doc.content.length > 150 ? '...' : ''),
-      relevanceScore: scoreDocument(doc, query, vehicleModel, modelYear),
+      relevanceScore: scoreDocument(doc, query, vehicleModel, modelYear, locale),
       url:
         doc.type === 'manual'
           ? `/manuals/${doc.id}`
@@ -189,6 +303,39 @@ export function localSearch(
     .slice(0, limit)
 }
 
+export function buildFallbackSummary(
+  query: string,
+  vehicleModel: string | undefined,
+  modelYear: string | number | undefined,
+  results: SearchResultItem[],
+  locale: Locale = 'ja'
+) {
+  if (locale === 'en') {
+    const vehicleLabel =
+      vehicleModel && modelYear ? `${vehicleModel} ${modelYear}` : 'target vehicle'
+    const titles = results.map((r) => `• ${r.title}`).join('\n')
+
+    return `For search keyword "${query}", I found ${results.length} result(s) related to ${vehicleLabel}.
+
+• **Inspection Procedure**: Visual wiring/connector check → resistance measurement (4-14Ω) → voltage waveform via DGS
+• **Key Checks**: Compare front vs rear O2 sensor response speed
+• **Related Information**:
+${titles}
+• **Caution**: Torque 55Nm when replacing sensor; ignition OFF before work`
+  }
+
+  const vehicleLabel = vehicleModel && modelYear ? `${vehicleModel} ${modelYear}年式` : '対象車両'
+  const titles = results.map((r) => `・${r.title}`).join('\n')
+
+  return `検索キーワード「${query}」について、${vehicleLabel}に関連する情報を${results.length}件見つけました。
+
+• **点検手順**: 配線・コネクタ確認 → 抵抗値測定（4-14Ω）→ DGSで電圧波形確認
+• **確認ポイント**: フロントO2センサーとリアO2センサーの応答速度を比較
+• **関連情報**:
+${titles}
+• **注意点**: センサー交換時はトルク55Nm、作業前にイグニッションOFF`
+}
+
 export function matchesFilter(
   result: { vehicleModel?: string; modelYear?: string | number },
   filterModel: string,
@@ -203,10 +350,4 @@ export function matchesFilter(
     result.modelYear === 'all' ||
     result.modelYear?.toString() === filterYear
   return modelMatch && yearMatch
-}
-
-export const mockDatabase = {
-  manuals: searchDocuments.filter((d) => d.type === 'manual'),
-  ties: searchDocuments.filter((d) => d.type === 'tie'),
-  qaQuestions: searchDocuments.filter((d) => d.type === 'qa'),
 }

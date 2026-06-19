@@ -1,12 +1,14 @@
+'use client'
+
 import { WorkSession } from '@/app/lib/mock-data'
-import { PHASE_LABELS } from '@/app/lib/utils'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
 interface WorkSessionHeaderProps {
   session: WorkSession
 }
 
 export default function WorkSessionHeader({ session }: WorkSessionHeaderProps) {
-  // 経過時間の計算（簡易版）
+  const { t } = useLanguage()
   const elapsedMinutes = Math.floor((Date.now() - session.startedAt.getTime()) / 60000)
   const hours = Math.floor(elapsedMinutes / 60)
   const minutes = elapsedMinutes % 60
@@ -18,11 +20,11 @@ export default function WorkSessionHeader({ session }: WorkSessionHeaderProps) {
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span>
-              <span className="font-medium">車種:</span> {session.vehicleModel}
+              <span className="font-medium">{t('home.vehicle')}:</span> {session.vehicleModel}
             </span>
             <span className="text-gray-300">|</span>
             <span>
-              <span className="font-medium">年式:</span> {session.modelYear}
+              <span className="font-medium">{t('home.modelYear')}:</span> {session.modelYear}
             </span>
             {session.vin && (
               <>
@@ -36,11 +38,11 @@ export default function WorkSessionHeader({ session }: WorkSessionHeaderProps) {
           
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span>
-              <span className="font-medium">工程:</span> {PHASE_LABELS[session.currentPhase]}
+              <span className="font-medium">{t('home.phase')}:</span> {t(`phase.${session.currentPhase}`)}
             </span>
             <span className="text-gray-300">|</span>
             <span>
-              <span className="font-medium">経過時間:</span> {elapsedTime}
+              <span className="font-medium">{t('home.elapsed')}:</span> {elapsedTime}
             </span>
           </div>
         </div>

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
+import LanguageToggle from './LanguageToggle'
 
 interface User {
   id: string
@@ -15,6 +17,7 @@ interface User {
 
 export default function Header() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [currentUser, setCurrentUser] = useState<User | null>(null)
 
   useEffect(() => {
@@ -46,26 +49,29 @@ export default function Header() {
           
           <nav className="flex items-center space-x-6">
             <Link href="/" className="text-sm hover:text-gray-200 transition-colors">
-              ホーム
+              {t('header.home')}
             </Link>
             <Link href="/search" className="text-sm hover:text-gray-200 transition-colors">
-              検索
+              {t('header.search')}
             </Link>
             {isManufacturer && (
               <Link href="/analytics" className="text-sm hover:text-gray-200 transition-colors">
-                📊 分析ダッシュボード
+                {t('header.analytics')}
               </Link>
             )}
+            <LanguageToggle />
             <div className="flex items-center space-x-4 ml-4 pl-4 border-l border-blue-400">
               <div className="text-right">
-                <div className="text-sm font-semibold">{currentUser?.name || 'ゲスト'}</div>
-                <div className="text-xs text-blue-200">{currentUser?.roleLabel || ''}</div>
+                <div className="text-sm font-semibold">{currentUser?.name || t('common.guest')}</div>
+                <div className="text-xs text-blue-200">
+                  {currentUser ? t(`roles.${currentUser.role}`) : ''}
+                </div>
               </div>
               <button 
                 onClick={handleLogout}
                 className="text-sm hover:text-gray-200 transition-colors"
               >
-                ログアウト
+                {t('header.logout')}
               </button>
             </div>
           </nav>

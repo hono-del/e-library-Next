@@ -1,15 +1,20 @@
+'use client'
+
 import Link from 'next/link'
 import { TIE } from '@/app/lib/mock-data'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
 interface TIEListProps {
   ties: TIE[]
 }
 
 export default function TIEList({ ties }: TIEListProps) {
+  const { t } = useLanguage()
+
   if (ties.length === 0) {
     return (
       <div className="card p-6 text-center text-gray-500">
-        関連するTIE事例が見つかりませんでした
+        {t('tie.noResults')}
       </div>
     )
   }
@@ -23,16 +28,16 @@ export default function TIEList({ ties }: TIEListProps) {
               <h3 className="font-semibold text-lg mb-2">{tie.title}</h3>
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">症状:</span>{' '}
+                  <span className="font-medium text-gray-700">{t('tie.symptom')}:</span>{' '}
                   <span className="text-gray-600">{tie.symptom}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">対応:</span>{' '}
+                  <span className="font-medium text-gray-700">{t('tie.solution')}:</span>{' '}
                   <span className="text-gray-600">{tie.solution}</span>
                 </div>
               </div>
               <div className="flex items-center text-sm text-gray-500 mt-3">
-                <span>関連性: </span>
+                <span>{t('tie.relevance')}: </span>
                 <div className="ml-2 flex">
                   {Array.from({ length: 5 }, (_, i) => (
                     <svg
@@ -54,7 +59,7 @@ export default function TIEList({ ties }: TIEListProps) {
             </div>
             <Link href={tie.url}>
               <button className="btn-secondary ml-4">
-                詳細を見る
+                {t('common.viewDetails')}
               </button>
             </Link>
           </div>

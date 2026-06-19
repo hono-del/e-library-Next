@@ -1,15 +1,20 @@
+'use client'
+
 import Link from 'next/link'
 import { QAQuestion } from '@/app/lib/mock-data'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
 interface QAListProps {
   questions: QAQuestion[]
 }
 
 export default function QAList({ questions }: QAListProps) {
+  const { t } = useLanguage()
+
   if (questions.length === 0) {
     return (
       <div className="card p-6 text-center text-gray-500">
-        関連する問題交流が見つかりませんでした
+        {t('qa.noResults')}
       </div>
     )
   }
@@ -22,10 +27,10 @@ export default function QAList({ questions }: QAListProps) {
             <div className="flex-1">
               <h3 className="font-semibold text-lg mb-2">{question.title}</h3>
               <div className="text-sm text-gray-600 mb-3">
-                <span className="font-medium">ベストアンサー:</span> {question.bestAnswer}
+                <span className="font-medium">{t('qa.bestAnswer')}:</span> {question.bestAnswer}
               </div>
               <div className="flex items-center text-sm text-gray-500">
-                <span>関連性: </span>
+                <span>{t('qa.relevance')}: </span>
                 <div className="ml-2 flex">
                   {Array.from({ length: 5 }, (_, i) => (
                     <svg
@@ -47,7 +52,7 @@ export default function QAList({ questions }: QAListProps) {
             </div>
             <Link href={question.url}>
               <button className="btn-secondary ml-4">
-                詳細を見る
+                {t('common.viewDetails')}
               </button>
             </Link>
           </div>

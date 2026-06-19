@@ -3,12 +3,14 @@
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
 function NewQuestionPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { t } = useLanguage()
   const sessionId = searchParams.get('sessionId')
-  
+
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -20,13 +22,28 @@ function NewQuestionPageContent() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const categories = [
+    { value: 'diagnosis', label: t('newQuestion.catDiagnosis') },
+    { value: 'repair', label: t('newQuestion.catRepair') },
+    { value: 'parts', label: t('newQuestion.catParts') },
+    { value: 'electrical', label: t('newQuestion.catElectrical') },
+    { value: 'engine', label: t('newQuestion.catEngine') },
+    { value: 'transmission', label: t('newQuestion.catTransmission') },
+    { value: 'other', label: t('newQuestion.catOther') },
+  ]
+
+  const examples = [
+    { title: t('newQuestion.example1Title'), body: t('newQuestion.example1Body') },
+    { title: t('newQuestion.example2Title'), body: t('newQuestion.example2Body') },
+    { title: t('newQuestion.example3Title'), body: t('newQuestion.example3Body') },
+  ]
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // モック投稿処理（2秒後に完了）
     setTimeout(() => {
-      alert('質問を投稿しました。他の整備士からの回答をお待ちください。')
+      alert(t('newQuestion.success'))
       setIsSubmitting(false)
       if (sessionId) {
         router.push(`/work-sessions/${sessionId}`)
@@ -47,46 +64,39 @@ function NewQuestionPageContent() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
-      {/* パンくずリスト */}
       <nav className="mb-6 text-sm text-gray-600">
-        <Link href="/" className="hover:text-primary">トップ</Link>
+        <Link href="/" className="hover:text-primary">{t('manual.breadcrumbTop')}</Link>
         {sessionId && (
           <>
             <span className="mx-2">/</span>
             <Link href={`/work-sessions/${sessionId}`} className="hover:text-primary">
-              作業セッション
+              {t('manual.breadcrumbSession')}
             </Link>
           </>
         )}
         <span className="mx-2">/</span>
-        <span>質問を投稿</span>
+        <span>{t('newQuestion.breadcrumb')}</span>
       </nav>
 
-      {/* ヘッダー */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-3">💬 現場の整備士に質問する</h1>
-        <p className="text-gray-600">
-          困ったことがあれば、全国の整備士に質問できます
-        </p>
+        <h1 className="text-3xl font-bold mb-3">{t('newQuestion.title')}</h1>
+        <p className="text-gray-600">{t('newQuestion.subtitle')}</p>
       </div>
 
-      {/* 注意事項 */}
       <div className="bg-blue-50 border-l-4 border-secondary rounded-lg p-6 mb-6">
-        <h3 className="font-semibold mb-2">💡 質問する前に</h3>
+        <h3 className="font-semibold mb-2">{t('newQuestion.beforeAsk')}</h3>
         <ul className="text-sm text-gray-700 space-y-1">
-          <li>• 同じ質問がないか、まずAI検索で確認してみてください</li>
-          <li>• 車両情報（車種、年式、DTC）を明記すると、的確な回答が得られます</li>
-          <li>• 既に試した診断内容も記載すると参考になります</li>
-          <li>• 回答は通常24時間以内に届きます</li>
+          <li>{t('newQuestion.tip1')}</li>
+          <li>{t('newQuestion.tip2')}</li>
+          <li>{t('newQuestion.tip3')}</li>
+          <li>{t('newQuestion.tip4')}</li>
         </ul>
       </div>
 
-      {/* 質問フォーム */}
       <form onSubmit={handleSubmit} className="card p-6">
-        {/* カテゴリー */}
         <div className="mb-6">
           <label htmlFor="category" className="block text-sm font-medium mb-2">
-            カテゴリー <span className="text-warning">*</span>
+            {t('newQuestion.category')} <span className="text-warning">*</span>
           </label>
           <select
             id="category"
@@ -96,20 +106,17 @@ function NewQuestionPageContent() {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             required
           >
-            <option value="diagnosis">診断・点検</option>
-            <option value="repair">修理・交換</option>
-            <option value="parts">部品・工具</option>
-            <option value="electrical">電装系</option>
-            <option value="engine">エンジン</option>
-            <option value="transmission">トランスミッション</option>
-            <option value="other">その他</option>
+            {categories.map((cat) => (
+              <option key={cat.value} value={cat.value}>
+                {cat.label}
+              </option>
+            ))}
           </select>
         </div>
 
-        {/* タイトル */}
         <div className="mb-6">
           <label htmlFor="title" className="block text-sm font-medium mb-2">
-            質問タイトル <span className="text-warning">*</span>
+            {t('newQuestion.titleLabel')} <span className="text-warning">*</span>
           </label>
           <input
             type="text"
@@ -117,45 +124,40 @@ function NewQuestionPageContent() {
             name="title"
             value={formData.title}
             onChange={handleChange}
-            placeholder="例: P0420のO2センサーと触媒の判別方法は？"
+            placeholder={t('newQuestion.titlePlaceholder')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             required
             maxLength={100}
           />
           <div className="text-xs text-gray-500 mt-1">
-            {formData.title.length}/100文字
+            {t('newQuestion.charCount', { count: String(formData.title.length) })}
           </div>
         </div>
 
-        {/* 質問内容 */}
         <div className="mb-6">
           <label htmlFor="content" className="block text-sm font-medium mb-2">
-            質問内容 <span className="text-warning">*</span>
+            {t('newQuestion.contentLabel')} <span className="text-warning">*</span>
           </label>
           <textarea
             id="content"
             name="content"
             value={formData.content}
             onChange={handleChange}
-            placeholder="具体的な症状、既に試したこと、困っていることなどを詳しく書いてください。"
+            placeholder={t('newQuestion.contentPlaceholder')}
             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
             rows={8}
             required
           />
-          <div className="text-xs text-gray-500 mt-1">
-            できるだけ詳しく記載すると、的確な回答が得られやすくなります
-          </div>
+          <div className="text-xs text-gray-500 mt-1">{t('newQuestion.contentHint')}</div>
         </div>
 
-        {/* 車両情報セクション */}
         <div className="border-t pt-6 mb-6">
-          <h3 className="font-semibold mb-4">車両情報（任意）</h3>
-          
+          <h3 className="font-semibold mb-4">{t('newQuestion.vehicleSection')}</h3>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 車種 */}
             <div>
               <label htmlFor="vehicleModel" className="block text-sm font-medium mb-2">
-                車種
+                {t('newQuestion.vehicleModel')}
               </label>
               <input
                 type="text"
@@ -163,15 +165,14 @@ function NewQuestionPageContent() {
                 name="vehicleModel"
                 value={formData.vehicleModel}
                 onChange={handleChange}
-                placeholder="例: Model A"
+                placeholder={t('newQuestion.vehiclePlaceholder')}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
-            {/* 年式 */}
             <div>
               <label htmlFor="modelYear" className="block text-sm font-medium mb-2">
-                年式
+                {t('newQuestion.modelYear')}
               </label>
               <input
                 type="text"
@@ -179,15 +180,14 @@ function NewQuestionPageContent() {
                 name="modelYear"
                 value={formData.modelYear}
                 onChange={handleChange}
-                placeholder="例: 2024"
+                placeholder={t('newQuestion.yearPlaceholder')}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
-            {/* DTC */}
             <div>
               <label htmlFor="dtc" className="block text-sm font-medium mb-2">
-                DTC
+                {t('newQuestion.dtc')}
               </label>
               <input
                 type="text"
@@ -195,15 +195,14 @@ function NewQuestionPageContent() {
                 name="dtc"
                 value={formData.dtc}
                 onChange={handleChange}
-                placeholder="例: P0420"
+                placeholder={t('newQuestion.dtcPlaceholder')}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
-            {/* 症状 */}
             <div>
               <label htmlFor="symptom" className="block text-sm font-medium mb-2">
-                症状
+                {t('newQuestion.symptom')}
               </label>
               <input
                 type="text"
@@ -211,28 +210,26 @@ function NewQuestionPageContent() {
                 name="symptom"
                 value={formData.symptom}
                 onChange={handleChange}
-                placeholder="例: エンジンチェックランプ点灯"
+                placeholder={t('newQuestion.symptomPlaceholder')}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
         </div>
 
-        {/* 確認事項 */}
         <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
-          <h3 className="font-semibold mb-2 text-yellow-900">⚠️ 投稿前の確認</h3>
+          <h3 className="font-semibold mb-2 text-yellow-900">{t('newQuestion.confirmTitle')}</h3>
           <ul className="text-sm text-yellow-800 space-y-1">
-            <li>✓ 個人情報（顧客名、VIN、電話番号など）が含まれていないか</li>
-            <li>✓ 質問内容は整備に関するものか</li>
-            <li>✓ 誹謗中傷や不適切な表現が含まれていないか</li>
+            <li>{t('newQuestion.confirm1')}</li>
+            <li>{t('newQuestion.confirm2')}</li>
+            <li>{t('newQuestion.confirm3')}</li>
           </ul>
         </div>
 
-        {/* アクションボタン */}
         <div className="flex justify-between items-center">
           <Link href={sessionId ? `/work-sessions/${sessionId}` : '/'}>
             <button type="button" className="btn-secondary" disabled={isSubmitting}>
-              キャンセル
+              {t('common.cancel')}
             </button>
           </Link>
           <button
@@ -240,46 +237,38 @@ function NewQuestionPageContent() {
             className="btn-primary"
             disabled={isSubmitting || !formData.title || !formData.content}
           >
-            {isSubmitting ? '投稿中...' : '質問を投稿する'}
+            {isSubmitting ? t('newQuestion.submitting') : t('newQuestion.submit')}
           </button>
         </div>
       </form>
 
-      {/* よくある質問例 */}
       <div className="mt-8 card p-6">
-        <h3 className="font-semibold mb-4">💡 よくある質問の例</h3>
+        <h3 className="font-semibold mb-4">{t('newQuestion.examplesTitle')}</h3>
         <div className="space-y-3 text-sm">
-          <div className="p-3 bg-gray-50 rounded">
-            <div className="font-medium mb-1">DTCの原因特定</div>
-            <div className="text-gray-600">
-              「P0420で、O2センサーと触媒のどちらが原因か判断する方法を教えてください」
+          {examples.map((example) => (
+            <div key={example.title} className="p-3 bg-gray-50 rounded">
+              <div className="font-medium mb-1">{example.title}</div>
+              <div className="text-gray-600">{example.body}</div>
             </div>
-          </div>
-          <div className="p-3 bg-gray-50 rounded">
-            <div className="font-medium mb-1">部品選定</div>
-            <div className="text-gray-600">
-              「Model A 2024年式のリアO2センサーの部品番号を教えてください」
-            </div>
-          </div>
-          <div className="p-3 bg-gray-50 rounded">
-            <div className="font-medium mb-1">作業手順</div>
-            <div className="text-gray-600">
-              「触媒交換時の注意点や、必要な工具を教えてください」
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
   )
 }
 
+function NewQuestionPageFallback() {
+  const { t } = useLanguage()
+  return (
+    <div className="container mx-auto px-4 py-8 text-center text-gray-500">
+      {t('common.loading')}
+    </div>
+  )
+}
+
 export default function NewQuestionPage() {
   return (
-    <Suspense fallback={
-      <div className="container mx-auto px-4 py-8 text-center text-gray-500">
-        読み込み中...
-      </div>
-    }>
+    <Suspense fallback={<NewQuestionPageFallback />}>
       <NewQuestionPageContent />
     </Suspense>
   )

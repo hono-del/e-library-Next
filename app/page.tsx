@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { PHASE_LABELS } from '@/app/lib/utils'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 import { formatElapsedTime } from '@/app/lib/utils'
 
 interface ActiveSession {
@@ -24,11 +24,11 @@ interface User {
 
 export default function Home() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [activeSessions, setActiveSessions] = useState<ActiveSession[]>([])
   const [currentUser, setCurrentUser] = useState<User | null>(null)
 
   useEffect(() => {
-    // ログインチェック
     const userStr = sessionStorage.getItem('currentUser')
     if (!userStr) {
       router.push('/login')
@@ -43,9 +43,7 @@ export default function Home() {
       return
     }
 
-    // sessionStorageから進行中の作業セッションを取得
     const savedSession = sessionStorage.getItem('currentWorkSession')
-    
     if (savedSession) {
       try {
         const parsedSession = JSON.parse(savedSession)
@@ -60,51 +58,46 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* メインアクション */}
       <div className="text-center mb-12">
         <Link href="/work-sessions/new">
           <button className="btn-primary text-lg py-4 px-12 mb-3">
-            作業を開始する
+            {t('home.startWork')}
           </button>
         </Link>
-        <p className="text-sm text-gray-600">
-          車両情報を入力すると、作業に必要な情報が自動で表示されます
-        </p>
+        <p className="text-sm text-gray-600">{t('home.startWorkDesc')}</p>
       </div>
 
-      {/* クイックアクセス */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">クイックアクセス</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('home.quickAccess')}</h2>
         <div className={`grid grid-cols-1 ${currentUser?.role === 'manufacturer' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
           <Link href="/search" className="card p-6 hover:shadow-lg transition-shadow">
             <div className="text-3xl mb-3">🔍</div>
-            <h3 className="font-bold text-lg mb-2">AI情報検索</h3>
-            <p className="text-sm text-gray-600">症状やDTCから関連情報を検索</p>
+            <h3 className="font-bold text-lg mb-2">{t('home.aiSearch')}</h3>
+            <p className="text-sm text-gray-600">{t('home.aiSearchDesc')}</p>
           </Link>
           
           <Link href="/qa-questions/new" className="card p-6 hover:shadow-lg transition-shadow">
             <div className="text-3xl mb-3">💬</div>
-            <h3 className="font-bold text-lg mb-2">質問を投稿</h3>
-            <p className="text-sm text-gray-600">他の整備士に質問する</p>
+            <h3 className="font-bold text-lg mb-2">{t('home.postQuestion')}</h3>
+            <p className="text-sm text-gray-600">{t('home.postQuestionDesc')}</p>
           </Link>
           
           {currentUser?.role === 'manufacturer' && (
             <Link href="/analytics" className="card p-6 hover:shadow-lg transition-shadow bg-blue-50 border-2 border-blue-200">
               <div className="text-3xl mb-3">📊</div>
-              <h3 className="font-bold text-lg mb-2 text-blue-900">分析ダッシュボード</h3>
-              <p className="text-sm text-blue-700">利用状況と課題を可視化（管理者向け）</p>
+              <h3 className="font-bold text-lg mb-2 text-blue-900">{t('home.analytics')}</h3>
+              <p className="text-sm text-blue-700">{t('home.analyticsDesc')}</p>
             </Link>
           )}
         </div>
       </section>
 
-      {/* 進行中の作業セッション */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">進行中の作業セッション</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('home.activeSessions')}</h2>
         
         {activeSessions.length === 0 ? (
           <div className="card p-6 text-center text-gray-500">
-            現在、進行中の作業セッションはありません
+            {t('home.noActiveSessions')}
           </div>
         ) : (
           <div className="space-y-4">
@@ -113,27 +106,25 @@ export default function Home() {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="text-sm text-gray-600 mb-2">
-                      <span className="font-medium">車種:</span> {session.vehicleModel} | 
-                      <span className="ml-2"><span className="font-medium">年式:</span> {session.modelYear}</span>
+                      <span className="font-medium">{t('home.vehicle')}:</span> {session.vehicleModel} | 
+                      <span className="ml-2"><span className="font-medium">{t('home.modelYear')}:</span> {session.modelYear}</span>
                     </div>
                     <div className="text-sm text-gray-600 mb-2">
-                      <span className="font-medium">症状:</span> {session.symptom || '未入力'}
+                      <span className="font-medium">{t('home.symptom')}:</span> {session.symptom || t('common.notEntered')}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-gray-600 mb-1">
-                      <span className="font-medium">工程:</span> {PHASE_LABELS[session.currentPhase as keyof typeof PHASE_LABELS] || session.currentPhase}
+                      <span className="font-medium">{t('home.phase')}:</span> {t(`phase.${session.currentPhase as 'diagnosis'}`)}
                     </div>
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium">経過時間:</span> {formatElapsedTime(session.startedAt)}
+                      <span className="font-medium">{t('home.elapsed')}:</span> {formatElapsedTime(session.startedAt)}
                     </div>
                   </div>
                 </div>
                 <div className="flex justify-end">
                   <Link href={`/work-sessions/${session.id}`}>
-                    <button className="btn-secondary">
-                      続きから作業する
-                    </button>
+                    <button className="btn-secondary">{t('home.continueWork')}</button>
                   </Link>
                 </div>
               </div>

@@ -4,9 +4,11 @@ import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { mockRecommendations } from '@/app/lib/mock-data'
 import { getWorkflowTie, SessionContext } from '@/app/lib/workflow-content'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
 export default function TIEDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const { t, locale } = useLanguage()
   const [sessionContext, setSessionContext] = useState<SessionContext>({
     vehicleModel: 'Model A',
     modelYear: 2024,
@@ -29,7 +31,7 @@ export default function TIEDetailPage({ params }: { params: Promise<{ id: string
     }
   }, [])
   
-  const workflowTie = getWorkflowTie(id, sessionContext)
+  const workflowTie = getWorkflowTie(id, sessionContext, locale)
   const baseTie = workflowTie ?? Object.values(mockRecommendations)
     .flatMap((rec) => rec.ties)
     .find((t) => t.id === id)
@@ -43,9 +45,9 @@ export default function TIEDetailPage({ params }: { params: Promise<{ id: string
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="card p-6 text-center">
-          <p className="text-gray-500">TIE事例が見つかりません</p>
+          <p className="text-gray-500">{t('tie.notFound')}</p>
           <Link href="/">
-            <button className="btn-secondary mt-4">トップに戻る</button>
+            <button className="btn-secondary mt-4">{t('common.backToTop')}</button>
           </Link>
         </div>
       </div>
@@ -56,27 +58,27 @@ export default function TIEDetailPage({ params }: { params: Promise<{ id: string
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* パンくずリスト */}
       <nav className="mb-6 text-sm text-gray-600">
-        <Link href="/" className="hover:text-primary">トップ</Link>
+        <Link href="/" className="hover:text-primary">{t('manual.breadcrumbTop')}</Link>
         <span className="mx-2">/</span>
-        <Link href="/work-sessions/1" className="hover:text-primary">作業セッション</Link>
+        <Link href="/work-sessions/1" className="hover:text-primary">{t('manual.breadcrumbSession')}</Link>
         <span className="mx-2">/</span>
-        <span>TIE事例詳細</span>
+        <span>{t('tie.breadcrumb')}</span>
       </nav>
 
       {/* TIEヘッダー */}
       <div className="card p-6 mb-6">
         <div className="mb-4 flex items-center justify-between">
           <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-            修理事例（TIE）
+            {t('tie.badge')}
           </span>
           <div className="text-sm text-gray-600">
-            <span className="font-medium">関連度:</span> {Math.round(tie.relevanceScore * 100)}%
+            <span className="font-medium">{t('tie.relevance')}:</span> {Math.round(tie.relevanceScore * 100)}%
           </div>
         </div>
         <h1 className="text-2xl font-bold mb-3">{tie.title}</h1>
         <div className="flex items-center text-sm text-gray-600 space-x-4">
           <div>
-            <span className="font-medium">症状:</span> {tie.symptom}
+            <span className="font-medium">{t('tie.symptom')}:</span> {tie.symptom}
           </div>
           <div>
             <span className="font-medium">投稿日:</span> 2024年8月15日
@@ -218,15 +220,15 @@ export default function TIEDetailPage({ params }: { params: Promise<{ id: string
       {/* アクションボタン */}
       <div className="flex justify-between items-center">
         <Link href="/work-sessions/1">
-          <button className="btn-secondary">← 作業画面に戻る</button>
+          <button className="btn-secondary">{t('common.backToWork')}</button>
         </Link>
         <div className="space-x-3">
-          <button className="btn-outline">👍 参考になった (15)</button>
+          <button className="btn-outline">👍 {locale === 'ja' ? '参考になった' : 'Helpful'} (15)</button>
           <button
             onClick={() => window.print()}
             className="btn-outline"
           >
-            🖨️ 印刷
+            {t('common.print')}
           </button>
         </div>
       </div>

@@ -1,19 +1,17 @@
+'use client'
+
 import { Warning } from '@/app/lib/mock-data'
+import { useLanguage } from '@/app/lib/i18n/LanguageProvider'
 
 interface WarningListProps {
   warnings: Warning[]
 }
 
 export default function WarningList({ warnings }: WarningListProps) {
+  const { t } = useLanguage()
+
   const getSeverityLabel = (severity: 'high' | 'medium' | 'low') => {
-    switch (severity) {
-      case 'high':
-        return '【重要】'
-      case 'medium':
-        return '【注意】'
-      case 'low':
-        return '【参考】'
-    }
+    return t(`warning.${severity}`)
   }
 
   return (
